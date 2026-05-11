@@ -1,63 +1,85 @@
 #include <iostream>
 #include <vector>
-#include <climits>
-
+#include <queue>
 using namespace std;
 
-int main(){
+int prims(int V, vector<pair<int,int>> adj[]) {
+
+    priority_queue<
+        pair<int,int>,
+        vector<pair<int,int>>,
+        greater<pair<int,int>>
+    > pq;
+
+    vector<bool> visited(V, false);
+
+    // {weight, node}
+    pq.push({0, 0});
+
+    int sum = 0;
+
+    while(!pq.empty()) {
+
+        auto it = pq.top();
+        pq.pop();
+
+        int weight = it.first;
+        int node = it.second;
+
+        // Skip if already visited
+        if(visited[node])
+            continue;
+
+        visited[node] = true;
+
+        sum += weight;
+
+        // Traverse neighbours
+        for(auto neighbour : adj[node]) {
+
+            int adjNode = neighbour.first;
+            int edgeWeight = neighbour.second;
+
+            if(!visited[adjNode]) {
+
+                pq.push({edgeWeight, adjNode});
+            }
+        }
+    }
+
+    return sum;
+}
+
+int main() {
 
     int V = 5;
 
-    vector<vector<int>> graph = {
-        {0, 2, 0, 6, 0},
-        {2, 0, 3, 8, 5},
-        {0, 3, 0, 0, 7},
-        {6, 8, 0, 0, 9},
-        {0, 5, 7, 9, 0}
-    };
-    
-    vector<int>key(V, INT_MAX);
-    vector<int>parent(V, -1);
-    vector<bool>mst(V, false);
-    
-    key[0] = 0;
-    
-    for(int count = 0; count < V-1; count++){
-        int u = -1;
-        int mini = INT_MAX;
-        
-        
-        
-        for(int i=0; i<V; i++){
-            if(!mst[i] && key[i] < mini){
-                mini = key[i];
-                u = i;
-            }
-        }
-        
-        mst[u] = true;
-        
-        for(int v=0; v<V; v++){
-            if(!mst[v] && graph[u][v] != 0 && graph[u][v] < key[v]){
-                key[v] = graph[u][v];
-                parent[v] = u;
-                
-            }
-        }
-       
-    }
-    
-     cout<<"Edges in MST:\n";
+    vector<pair<int,int>> adj[V];
 
-    for(int i=1; i<V; i++){
+    // Undirected Graph
 
-        cout<<parent[i]
-            <<" - "
-            <<i
-            <<" : "
-            <<graph[parent[i]][i]
-            <<endl;
-    }
-    
+    adj[0].push_back({1, 2});
+    adj[1].push_back({0, 2});
+
+    adj[0].push_back({3, 6});
+    adj[3].push_back({0, 6});
+
+    adj[1].push_back({2, 3});
+    adj[2].push_back({1, 3});
+
+    adj[1].push_back({3, 8});
+    adj[3].push_back({1, 8});
+
+    adj[1].push_back({4, 5});
+    adj[4].push_back({1, 5});
+
+    adj[2].push_back({4, 7});
+    adj[4].push_back({2, 7});
+
+    int mstWeight = prims(V, adj);
+
+    cout << "Minimum Spanning Tree Weight = "
+         << mstWeight << endl;
+
     return 0;
 }
